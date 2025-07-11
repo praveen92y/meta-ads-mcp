@@ -270,7 +270,8 @@ async def update_adset(adset_id: str, frequency_control_specs: List[Dict[str, An
     current_details = json.loads(current_details_json)
     
     # Start the callback server if not already running
-    port = start_callback_server()
+    # port = start_callback_server()
+    port = 8888
     
     # Generate confirmation URL with properly encoded parameters
     changes_json = json.dumps(changes)
