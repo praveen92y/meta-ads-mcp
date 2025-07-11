@@ -705,27 +705,21 @@ async def get_account_pages(access_token: str = None, account_id: str = None) ->
     Returns:
         JSON response with pages associated with the account
     """
-    print(f"get_account_pages called with account_id: {account_id}")
     # Check required parameters
     if not account_id:
-        print("Error: No account ID provided")
         return json.dumps({"error": "No account ID provided"}, indent=2)
     
     # Handle special case for 'me'
     if account_id == "me":
-        print("Handling special case for account_id = 'me'")
         try:
             endpoint = "me/accounts"
             params = {
                 "fields": "id,name,username,category,fan_count,link,verification_status,picture"
             }
             
-            print(f"Requesting user pages from endpoint: {endpoint}")
             user_pages_data = await make_api_request(endpoint, access_token, params)
-            print(f"Received user pages data: {user_pages_data}")
             return json.dumps(user_pages_data, indent=2)
         except Exception as e:
-            print(f"Error getting user pages: {e}")
             return json.dumps({
                 "error": "Failed to get user pages",
                 "details": str(e)
@@ -733,25 +727,19 @@ async def get_account_pages(access_token: str = None, account_id: str = None) ->
     
     # Ensure account_id has the 'act_' prefix for regular accounts
     if not account_id.startswith("act_"):
-        print(f"Prepending 'act_' to account_id. Old: {account_id}", end="")
         account_id = f"act_{account_id}"
-        print(f", New: {account_id}")
     
-    print(f"Starting to fetch pages for account: {account_id}")
     try:
         # Try all approaches that might work
         
         # Approach 1: Get active ads and extract page IDs
-        print("--- Approach 1: Get active ads and extract page IDs ---")
         endpoint = f"{account_id}/ads"
         params = {
             "fields": "creative{object_story_spec{page_id}}",
             "limit": 100
         }
         
-        print(f"Requesting ads from endpoint: {endpoint}")
         ads_data = await make_api_request(endpoint, access_token, params)
-        print(f"Received ads data: {ads_data}")
         
         # Extract unique page IDs from ads
         page_ids = set()
@@ -760,54 +748,41 @@ async def get_account_pages(access_token: str = None, account_id: str = None) ->
                 if "creative" in ad and "creative" in ad and "object_story_spec" in ad["creative"] and "page_id" in ad["creative"]["object_story_spec"]:
                     page_ids.add(ad["creative"]["object_story_spec"]["page_id"])
         
-        print(f"Extracted page IDs from ads: {page_ids}")
         # If we found page IDs, get details for each
         if page_ids:
             page_details = {"data": []}
             
             for page_id in page_ids:
-                print(f"Fetching details for page_id: {page_id}")
                 page_endpoint = f"{page_id}"
                 page_params = {
                     "fields": "id,name,username,category,fan_count,link,verification_status,picture"
                 }
                 
                 page_data = await make_api_request(page_endpoint, access_token, page_params)
-                print(f"Received page data for {page_id}: {page_data}")
                 if "id" in page_data:
                     page_details["data"].append(page_data)
             
             if page_details["data"]:
-                print("Found page details from Approach 1. Returning result.")
                 return json.dumps(page_details, indent=2)
         
-        print("--- Approach 1 did not yield any pages. Trying Approach 2. ---")
         # Approach 2: Try client_pages endpoint
-        print("--- Approach 2: Try client_pages endpoint ---")
         endpoint = f"{account_id}/client_pages"
         params = {
             "fields": "id,name,username,category,fan_count,link,verification_status,picture"
         }
         
-        print(f"Requesting client pages from endpoint: {endpoint}")
         client_pages_data = await make_api_request(endpoint, access_token, params)
-        print(f"Received client pages data: {client_pages_data}")
         
         if "data" in client_pages_data and client_pages_data["data"]:
-            print("Found pages from Approach 2. Returning result.")
             return json.dumps(client_pages_data, indent=2)
         
-        print("--- Approach 2 did not yield any pages. Trying Approach 3. ---")
         # Approach 3: Try promoted_objects endpoint to find page IDs
-        print("--- Approach 3: Try promoted_objects endpoint ---")
         endpoint = f"{account_id}/promoted_objects"
         params = {
             "fields": "page_id"
         }
         
-        print(f"Requesting promoted objects from endpoint: {endpoint}")
         promoted_objects_data = await make_api_request(endpoint, access_token, params)
-        print(f"Received promoted objects data: {promoted_objects_data}")
         
         if "data" in promoted_objects_data and promoted_objects_data["data"]:
             page_ids = set()
@@ -815,26 +790,21 @@ async def get_account_pages(access_token: str = None, account_id: str = None) ->
                 if "page_id" in obj:
                     page_ids.add(obj["page_id"])
             
-            print(f"Extracted page IDs from promoted objects: {page_ids}")
             if page_ids:
                 page_details = {"data": []}
                 for page_id in page_ids:
-                    print(f"Fetching details for page_id: {page_id}")
                     page_endpoint = f"{page_id}"
                     page_params = {
                         "fields": "id,name,username,category,fan_count,link,verification_status,picture"
                     }
                     
                     page_data = await make_api_request(page_endpoint, access_token, page_params)
-                    print(f"Received page data for {page_id}: {page_data}")
                     if "id" in page_data:
                         page_details["data"].append(page_data)
                 
                 if page_details["data"]:
-                    print("Found page details from Approach 3. Returning result.")
                     return json.dumps(page_details, indent=2)
         
-        print("--- All approaches failed. Returning empty data. ---")
         # If all approaches failed, return empty data with a message
         return json.dumps({
             "data": [],
@@ -843,7 +813,6 @@ async def get_account_pages(access_token: str = None, account_id: str = None) ->
         }, indent=2)
         
     except Exception as e:
-        print(f"An unexpected error occurred: {e}")
         return json.dumps({
             "error": "Failed to get account pages",
             "details": str(e)
