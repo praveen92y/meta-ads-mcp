@@ -745,7 +745,7 @@ async def get_account_pages(access_token: str = None, account_id: str = None) ->
         page_ids = set()
         if "data" in ads_data:
             for ad in ads_data.get("data", []):
-                if "creative" in ad and "creative" in ad and "object_story_spec" in ad["creative"] and "page_id" in ad["creative"]["object_story_spec"]:
+                if "creative" in ad and "object_story_spec" in ad.get("creative", {}) and "page_id" in ad["creative"]["object_story_spec"]:
                     page_ids.add(ad["creative"]["object_story_spec"]["page_id"])
         
         # If we found page IDs, get details for each
@@ -762,6 +762,29 @@ async def get_account_pages(access_token: str = None, account_id: str = None) ->
                 if "id" in page_data:
                     page_details["data"].append(page_data)
             
+            if page_details["data"]:
+                return json.dumps(page_details, indent=2)
+        
+        # Approach 1b: Try to extract page_ids from tracking_specs in ads
+        tracking_page_ids = set()
+        if "data" in ads_data:
+            for ad in ads_data.get("data", []):
+                tracking_specs = ad.get("tracking_specs")
+                if isinstance(tracking_specs, list):
+                    for spec in tracking_specs:
+                        # tracking_specs can be a dict with keys like 'page_id', 'action.type', etc.
+                        if isinstance(spec, dict) and "page_id" in spec:
+                            tracking_page_ids.add(spec["page_id"])
+        if tracking_page_ids:
+            page_details = {"data": []}
+            for page_id in tracking_page_ids:
+                page_endpoint = f"{page_id}"
+                page_params = {
+                    "fields": "id,name,username,category,fan_count,link,verification_status,picture"
+                }
+                page_data = await make_api_request(page_endpoint, access_token, page_params)
+                if "id" in page_data:
+                    page_details["data"].append(page_data)
             if page_details["data"]:
                 return json.dumps(page_details, indent=2)
         
