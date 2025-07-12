@@ -836,6 +836,8 @@ async def get_account_pages(access_token: str = None, account_id: str = None) ->
                 page_data = await make_api_request(page_endpoint, access_token, page_params)
                 if "id" in page_data:
                     page_details["data"].append(page_data)
+                else:
+                    page_details["data"].append({"id": page_id, "error": "Page details not found"})
             if page_details["data"]:
                 return json.dumps(page_details, indent=2)
         
