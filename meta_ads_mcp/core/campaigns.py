@@ -108,17 +108,17 @@ async def create_campaign(
         access_token: Meta API access token (optional - will use cached token if not provided)
         account_id: Meta Ads account ID (format: act_XXXXXXXXX)
         name: Campaign name
-        objective: Campaign objective. Validates ad objectives. enum{BRAND_AWARENESS, LEAD_GENERATION, LINK_CLICKS, CONVERSIONS, OUTCOME_TRAFFIC, etc.}.
+        objective: Campaign objective. Validates ad objectives. enum{OUTCOME_AWARENESS, OUTCOME_TRAFFIC, OUTCOME_ENGAGEMENT, OUTCOME_LEADS, OUTCOME_APP_PROMOTION, OUTCOME_SALES}.
         status: Initial campaign status (default: PAUSED)
         special_ad_categories: List of special ad categories if applicable
-        daily_budget: Daily budget in account currency (in cents) as a string
-        lifetime_budget: Lifetime budget in account currency (in cents) as a string
+        daily_budget: Daily budget in account currency (in cents/paisa) as a string. Default is 50000 paisa (500 INR).
+        lifetime_budget: Lifetime budget in account currency (in cents/paisa) as a string. Default is 500000 paisa (5000 INR).
         buying_type: Buying type (e.g., 'AUCTION')
-        bid_strategy: Bid strategy (e.g., 'LOWEST_COST', 'LOWEST_COST_WITH_BID_CAP', 'COST_CAP')
-        bid_cap: Bid cap in account currency (in cents) as a string
-        spend_cap: Spending limit for the campaign in account currency (in cents) as a string
+        bid_strategy: Bid strategy ('LOWEST_COST_WITHOUT_CAP', 'COST_CAP', 'LOWEST_COST_WITH_BID_CAP','LOWEST_COST_WITH_MIN_ROAS')
+        bid_cap: Bid cap in account currency (in cents/paisa) as a string
+        spend_cap: Spending limit for the campaign in account currency (in cents/paisa) as a string
         campaign_budget_optimization: Whether to enable campaign budget optimization
-        ab_test_control_setups: Settings for A/B testing (e.g., [{"name":"Creative A", "ad_format":"SINGLE_IMAGE"}])
+        ab_test_control_setups: Settings for A/B testing (e.g., [{"name":"Creative A", "ad_format":"SINGLE_IMAGE"}, {"name":"Creative B", "ad_format":"SINGLE_IMAGE"}])
     """
     # Check required parameters
     if not account_id:
@@ -136,7 +136,7 @@ async def create_campaign(
     
     # For this example, we'll add a fixed daily budget if none is provided
     if not daily_budget and not lifetime_budget:
-        daily_budget = "1000"  # Default to $10 USD
+        daily_budget = "50000"  # Default to 50000 paisa (500 INR)
     
     endpoint = f"{account_id}/campaigns"
     
@@ -211,11 +211,11 @@ async def update_campaign(
         name: New campaign name
         status: New campaign status (e.g., 'ACTIVE', 'PAUSED')
         special_ad_categories: List of special ad categories if applicable
-        daily_budget: New daily budget in account currency (in cents) as a string
-        lifetime_budget: New lifetime budget in account currency (in cents) as a string
+        daily_budget: New daily budget in account currency (in cents/paisa) as a string. Default is 50000 paisa (500 INR).
+        lifetime_budget: New lifetime budget in account currency (in cents/paisa) as a string. Default is 500000 paisa (5000 INR).
         bid_strategy: New bid strategy
-        bid_cap: New bid cap in account currency (in cents) as a string
-        spend_cap: New spending limit for the campaign in account currency (in cents) as a string
+        bid_cap: New bid cap in account currency (in cents/paisa) as a string
+        spend_cap: New spending limit for the campaign in account currency (in cents/paisa) as a string
         campaign_budget_optimization: Enable/disable campaign budget optimization
         objective: New campaign objective (Note: May not always be updatable)
     """

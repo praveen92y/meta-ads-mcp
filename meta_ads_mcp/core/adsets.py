@@ -116,14 +116,20 @@ async def create_adset(
         campaign_id: Meta Ads campaign ID this ad set belongs to
         name: Ad set name
         status: Initial ad set status (default: PAUSED)
-        daily_budget: Daily budget in account currency (in cents) as a string
-        lifetime_budget: Lifetime budget in account currency (in cents) as a string
+        daily_budget: Daily budget in account currency (in cents/paisa) as a string
+        lifetime_budget: Lifetime budget in account currency (in cents/paisa) as a string
         targeting: Targeting specifications including age, location, interests, etc.
-                  Use targeting_automation.advantage_audience=1 for automatic audience finding
-        optimization_goal: Conversion optimization goal (e.g., 'LINK_CLICKS', 'REACH', 'CONVERSIONS')
+                  Use targeting_automation.advantage_audience=1 for automatic audience finding. If user has not provided targeting, use below default targeting.
+                  {
+                    "geo_locations": {"countries": ["IN"]},
+                    "age_min": 18,
+                    "age_max": 65,
+                    "publisher_platforms": ["instagram"]
+                  }
+        optimization_goal: Conversion optimization goal ('IMPRESSIONS', 'LEAD_GENERATION', 'QUALITY_LEAD','LINK_CLICKS','REACH')
         billing_event: How you're charged (e.g., 'IMPRESSIONS', 'LINK_CLICKS')
-        bid_amount: Bid amount in account currency (in cents)
-        bid_strategy: Bid strategy (e.g., 'LOWEST_COST', 'LOWEST_COST_WITH_BID_CAP')
+        bid_amount: Bid amount in account currency (in cents/paisa)
+        bid_strategy: Bid strategy ('LOWEST_COST_WITHOUT_CAP', 'COST_CAP', 'LOWEST_COST_WITH_BID_CAP','LOWEST_COST_WITH_MIN_ROAS')
         start_time: Start time in ISO 8601 format (e.g., '2023-12-01T12:00:00-0800')
         end_time: End time in ISO 8601 format
         access_token: Meta API access token (optional - will use cached token if not provided)
@@ -149,7 +155,7 @@ async def create_adset(
         targeting = {
             "age_min": 18,
             "age_max": 65,
-            "geo_locations": {"countries": ["US"]},
+            "geo_locations": {"countries": ["IN"]},
             "targeting_automation": {"advantage_audience": 1}
         }
     
@@ -208,12 +214,12 @@ async def update_adset(adset_id: str, frequency_control_specs: List[Dict[str, An
         adset_id: Meta Ads ad set ID
         frequency_control_specs: List of frequency control specifications 
                                  (e.g. [{"event": "IMPRESSIONS", "interval_days": 7, "max_frequency": 3}])
-        bid_strategy: Bid strategy (e.g., 'LOWEST_COST_WITH_BID_CAP')
-        bid_amount: Bid amount in account currency (in cents for USD)
+        bid_strategy: Bid strategy ('LOWEST_COST_WITHOUT_CAP', 'COST_CAP', 'LOWEST_COST_WITH_BID_CAP','LOWEST_COST_WITH_MIN_ROAS')
+        bid_amount: Bid amount in account currency (in cents for USD and paisa for INR, default currency is INR)
         status: Update ad set status (ACTIVE, PAUSED, etc.)
         targeting: Targeting specifications including targeting_automation
                   (e.g. {"targeting_automation":{"advantage_audience":1}})
-        optimization_goal: Conversion optimization goal (e.g., 'LINK_CLICKS', 'CONVERSIONS', 'APP_INSTALLS', etc.)
+        optimization_goal: Conversion optimization goal ('IMPRESSIONS', 'LEAD_GENERATION', 'QUALITY_LEAD','LINK_CLICKS','REACH')
         access_token: Meta API access token (optional - will use cached token if not provided)
     """
     if not adset_id:
