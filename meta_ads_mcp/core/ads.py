@@ -806,14 +806,16 @@ async def get_account_pages(access_token: str = None, account_id: str = None) ->
                     return json.dumps(page_details, indent=2)
         
         # Approach 4: Extract page IDs from tracking_specs in ads
-        # Reuse ads_data from Approach 1 if available, otherwise fetch again
-        if 'ads_data' not in locals():
-            endpoint = f"{account_id}/ads"
-            params = {
-                "fields": "id,tracking_specs",
-                "limit": 100
-            }
-            ads_data = await make_api_request(endpoint, access_token, params)
+        # Always fetch ads_data for this approach
+        limit_value = 10  # Default limit
+        if 'limit' in locals():
+            limit_value = limit
+        params = {
+            "fields": "id,name,adset_id,campaign_id,status,creative,created_time,updated_time,bid_amount,conversion_domain,tracking_specs",
+            "limit": limit_value
+        }
+        endpoint = f"{account_id}/ads"
+        ads_data = await make_api_request(endpoint, access_token, params)
 
         tracking_page_ids = set()
         if "data" in ads_data:
